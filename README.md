@@ -95,25 +95,12 @@ python get_texture_features.py \
     --masked_patch \
     --patch_size 192
 ```
-## 3) Ground truth identification
-Get the intensity information for GT thresholding to determine the true phenotype.
-```
-python get_intensity_features.py \
-    --GT_path [PATH_TO_IMAGES] \
-    --GT_channel_names [NAMES_OF_CHANNELS] \
-    --masks_path [PATH_TO_MASKS] \
-    --layout [PATH_TO_LAYOUT_FILE] \
-    --file_extension_GT [FILE_EXTENSION_IMAGES] \
-    --file_extension_masks [FILE_EXTENSION_MASKS] \
-    --output_path [OUTPUT_PATH] \
-    --masked_patch \
-    --patch_size 192
-```
 
+Example of ground-truth identification (with intensity features extracted using 'get_intensity_features.py'
 ![image](https://github.com/user-attachments/assets/be65a0e6-8fe3-435e-ab98-f748bf611c41)
 
 
-## 4) Classification
+## 3) Classification
 
 ```
 python train_evaluate_CNN.py \
@@ -143,7 +130,7 @@ python train_evaluate_RF.py \
     --random_seed [RANDOM_SEED_FOR_REPRODUCIBILITY]
 ```
 
-## 5) Evaluation
+## 4) Evaluation
 ```
 python embeddings.py \
     --input_path [PATH_TO_CP_CROPS] \
