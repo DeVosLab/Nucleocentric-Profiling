@@ -158,31 +158,9 @@ python grad_cam.py \
     --mixed
     --sample [SAMPLE_SIZE_PER_TARGET_CLASS]
 ```
-```
-python plate_overview.py \
-    --input_path [PATH_TO_IMAGES] \
-    --output_path [OUTPUT_PATH] \
-    --layout [PATH_TO_EXCEL_FILE_WITH_PLATE_LAYOUT] \
-    --file_extension [FILE_EXTENSION_OF_IMAGES] \
-    --pmin 1 --pmax 99 \
-    --gpu \
-    --channels2use [CHANNELS_USED]
-```
-```
-python predict_CNN.py \
-    --input_path [PATH_TO_CP_CROPS] \
-    --model_file [PATH_TO_MODEL_FILE] \
-    --target_names [CULTURE_NAMES_TO_TRAIN_ON] \
-    --layout [PATH_TO_EXCEL_FILE_WITH_PLATE_LAYOUT] \
-    --GT_data_file [PATH_TO_GT_FILE] \
-    --image_size [IMAGES_ARE_RESIZED_TO_THIS_SIZE | 128] \
-    --channels2use [CHANNELS_USED] \
-    --random_seed [RANDOM_SEED_FOR_REPRODUCIBILITY] \
-    --mixed
-    --sample [SAMPLE_SIZE_PER_TARGET_CLASS]
-```
 
-# CITATION
+
+# HOW TO CITE
 If you use this repository, please cite the paper:
 ```
 @article{Beuckeleer_2024,
