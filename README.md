@@ -96,7 +96,7 @@ python get_texture_features.py \
     --patch_size 192
 ```
 
-Example of ground-truth identification (with intensity features extracted using 'get_intensity_features.py'
+Example of ground-truth identification (with intensity features extracted using 'get_intensity_features.py')
 ![image](https://github.com/user-attachments/assets/be65a0e6-8fe3-435e-ab98-f748bf611c41)
 
 
