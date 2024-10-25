@@ -128,44 +128,45 @@ python train_evaluate_CNN.py \                                        # Script f
 ```
 
 ```
-python train_evaluate_RF.py \
-    --data_file [PATH_TO_FEATURE_DATA] \
-    --regions2use [REGIONS_AS_INPUT] \
-    --channels2use [CHANNELS_AS_INPUT] \
-    --mixed
-    --sample [SAMPLE_SIZE_PER_TARGET_CLASS] \
-    --random_seed [RANDOM_SEED_FOR_REPRODUCIBILITY]
+python train_evaluate_RF.py \                                         # Script for training and evaluating a random forest on a feature dataframe
+    --data_file [PATH_TO_FEATURE_DATA] \                              # Path to file containing ROI features (output from get_intensity_features.py and get_texture_features.py)        # Required
+    --regions2use [REGIONS_AS_INPUT] \                                # Which regions to use for training and evaluation (cell, cyto, nucleus or all)                                   # Required
+    --channels2use [CHANNELS_AS_INPUT] \                              # Which channels to use for training and evaluation (DAPI, FITC, Cy3, Cy5 or all)                                 # Required
+    --mixed                                                           # Indicate if you are predicting from a co-culture                                                                # Not required
+    --sample [SAMPLE_SIZE_PER_TARGET_CLASS] \                         # How many ROIs of each target class are included in the training set                                             # Required
+    --random_seed [RANDOM_SEED_FOR_REPRODUCIBILITY]                   # Seed for data sampling and splitting in train/test/validation sets                                              # Default '0'
 ```
 
 ## 4) Evaluation
 ```
-python embeddings.py \
-    --input_path [PATH_TO_CP_CROPS] \
-    --output_path [OUTPUT_PATH] \
-    --model_file [PATH_TO_MODEL_FILE] \
-    --target_names [CULTURE_NAMES_TO_TRAIN_ON] \
-    --layout [PATH_TO_EXCEL_FILE_WITH_PLATE_LAYOUT] \
-    --GT_data_file [PATH_TO_GT_FILE] \
-    --image_size [IMAGES_ARE_RESIZED_TO_THIS_SIZE | 128] \
-    --channels2use [CHANNELS_USED] \
-    --random_seed [RANDOM_SEED_FOR_REPRODUCIBILITY] \
-    --mixed
-    --sample [SAMPLE_SIZE_PER_TARGET_CLASS]
+python embeddings.py \                                                # Script for extracting the feature embeddings from a trained CNN model
+    --input_path [PATH_TO_CP_CROPS] \                                 # Input path to the CP crops you want to extract embeddings from                # Required
+    --output_path [OUTPUT_PATH] \                                     # Output path where you want to store the .csv file with embeddings             # Required
+    --model_file [PATH_TO_MODEL_FILE] \                               # Path to the trained CNN network (.pth file)                                   # Required
+    --target_names [CULTURE_NAMES_TO_TRAIN_ON] \                      # Names of the prediction classes (as in the layout file)                       # Required
+    --layout [PATH_TO_EXCEL_FILE_WITH_PLATE_LAYOUT] \                 # Path to the layout file (excel), reflecting the contents of the plate layout  # Required
+    --GT_data_file [PATH_TO_GT_FILE] \                                # .csv file containing the true phenotype of each ROI                           # Required
+    --image_size [IMAGES_ARE_RESIZED_TO_THIS_SIZE | 128] \            # Size (in pixels) to which the input crops are resized for training            # Default '128' 
+    --random_seed [RANDOM_SEED_FOR_REPRODUCIBILITY] \                 # Seed for data sampling and splitting in train/test/validation sets            # Default '0'  
+    --mixed                                                           # Indicate if you are predicting from a co-culture                              # Not required
+    --sample [SAMPLE_SIZE_PER_TARGET_CLASS]                           # How many ROIs of each target class are included in the training set           # Required
 ```
 ```
-python grad_cam.py \
-    --input_path [PATH_TO_CP_CROPS] \
-    --model_file [PATH_TO_MODEL_FILE] \
-    --target_names [CULTURE_NAMES_TO_TRAIN_ON] \
-    --layout [PATH_TO_EXCEL_FILE_WITH_PLATE_LAYOUT] \
-    --GT_data_file [PATH_TO_GT_FILE] \
-    --image_size [IMAGES_ARE_RESIZED_TO_THIS_SIZE | 128] \
-    --channels2use [CHANNELS_USED] \
-    --random_seed [RANDOM_SEED_FOR_REPRODUCIBILITY] \
-    --mixed
-    --sample [SAMPLE_SIZE_PER_TARGET_CLASS]
+python grad_cam.py \                                                  # Script for generating GradCAM heatmaps of individual crops
+    --input_path [PATH_TO_CP_CROPS] \                                 # Input path to the CP crops you want to extract embeddings from                # Required
+    --model_file [PATH_TO_MODEL_FILE] \                               # Path to the trained CNN network (.pth file)                                   # Required
+    --target_names [CULTURE_NAMES_TO_TRAIN_ON] \                      # Names of the prediction classes (as in the layout file)                       # Required
+    --layout [PATH_TO_EXCEL_FILE_WITH_PLATE_LAYOUT] \                 # Path to the layout file (excel), reflecting the contents of the plate layout  # Required
+    --GT_data_file [PATH_TO_GT_FILE] \                                # .csv file containing the true phenotype of each ROI                           # Required
+    --image_size [IMAGES_ARE_RESIZED_TO_THIS_SIZE | 128] \            # Size (in pixels) to which the input crops are resized for training            # Default '128' 
+    --channels2use [CHANNELS_USED] \                                  # Fluorescent channels used for model training                                  # Default '0 1 2 3 4 5'
+    --random_seed [RANDOM_SEED_FOR_REPRODUCIBILITY] \                 # Seed for data sampling and splitting in train/test/validation sets            # Default '0'
+    --mixed                                                           # Indicate if you are predicting from a co-culture                              # Not required
+    --sample [SAMPLE_SIZE_PER_TARGET_CLASS]                           # How many ROIs of each target class are included in the training set           # Required
 ```
+# Step-by-step tutorial
 
+(1) Download the test dataset
 
 # HOW TO CITE
 If you use this repository, please cite the paper:
