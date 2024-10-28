@@ -103,10 +103,6 @@ python get_texture_features.py \                                       # Script 
     --patch_size 192                                                   # Size of the box around the centroid of the segmentation mask             # Default '192' (for whole cell), should be set to '60' for nuclear and nucleocentric crops
 ```
 
-Example of ground-truth identification by thresholding (with intensity features extracted using 'get_intensity_features.py')
-![image](https://github.com/user-attachments/assets/be65a0e6-8fe3-435e-ab98-f748bf611c41)
-
-
 ## 3) Classification
 
 ```
@@ -166,9 +162,99 @@ python grad_cam.py \                                                  # Script f
 ```
 # Step-by-step tutorial
 
-(1) Download the test dataset
+## (1) Download the test dataset
+The test dataset (zip-file, 20 GB) contains 480 cell painting images and 480 matched ground truth images. It is associated with a layout file describing the plate layout.
+Download, unzip and store the data locally. The Cell Painting images have 4 channels. The ground truth images have 2 channels (BrdU and EdU).
 
-# HOW TO CITE
+## (2) Segment individual cells
+From the CP images, individual ROIs are segmented. This can be either from the full cell or only the nucleus. 
+Run the code in the cmd terminal:
+* Cell segmentation:
+```
+python segment_cells.py -i [INPUT_PATH] -o [OUTPUT_PATH] --file_extension .nd2 --save_masks --gpu --net_avg --channels2use 0 1 2 3 --target cyto
+```
+* Nucleus segmentation:
+```
+python segment_nuclei.py -i [INPUT_PATH] -o [OUTPUT_PATH] --file_extension .nd2 --gpu
+```
+This segmentation step generates as output the segmentation masks and an overview of resulting images to check the segmentation quality.
+
+## (3) Ground truth alignment
+The ground truth information was acquired by cyclic staining. This means the multiwell plate is imaged twice. In between imaging cycles, the plate is taken off the microscope stage. As a result, small translational shifts can occur. We need to overlay information from all imaging rounds. Therefore, we perform this alignment step where the ground truth images are translated to perfectly match the CP images and masks.
+Run the code in the cmd terminal: 
+```
+python align_GT2CP.py --CP_path --GT_path --GT_name EdU_BrdU --masks_path [PATH_TO_MASKS] --channels2use_CP 0 --channels2use_GT 0 --file_extension_imgs .nd2  --file_extension_masks .tif --output_path [OUTPUT_PATH]
+```
+This step generates a folder containing aligned CP images, aligned GT images and aligned masks.
+
+## (4) Get ground truth datafile
+Intensity information can be extracted from the GT images. Based on this intensity data and the presence and absence of fluorescent signal for either marker, a threshold is defined that determines which class the ROIs belong to. 
+The intensity information is extracted by running 'get_intensity_features.py' in the cmd terminal given the GT images as input:
+```
+python get_intensity_features.py --GT_path [PATH_TO_GT_IMAGES] --GT_channel_names [EdU BrdU] --masks_path [PATH_TO_MASKS] --layout [...\layout.xlsx] --file_extension_GT .tif --file_extension_masks .tif --output_path [OUTPUT_PATH] --masked_patch --patch_size 60
+```
+This step generates a .csv file containing features (columns) for each ROI (rows). This file is loaded into the 'set_GT_threshold.py' script. This script cannot be run in the terminal since it requires manual examination of the thresholds.
+
+Example of ground-truth identification by thresholding (with intensity features extracted using 'get_intensity_features.py')
+![image](https://github.com/user-attachments/assets/be65a0e6-8fe3-435e-ab98-f748bf611c41)
+
+As an output of this step, a 'GT_data.csv' file is generated. This file contains for each ROI, a unique ROI identifier associated with a 'true condition'. This true condition refers to the true cell class or is 'undefined' when no unequivocal ground truth staining is present. 
+
+## (5) Crop ROIs
+The individual ROIs are cropped out of the cell painting image. These crops can be given to the CNN as input. A crop is defined by 2 parameters: patch size and masking. The patch size refers to how large the crop is (expressed in pixels surrounding the centroid of the segmentation mask). Masking determines whether the background (all pixels outside of the segmentation mask) are put to zero or not. Run this code in the cmd terminal.
+* Full cell crops:
+```
+python crop_ROIs.py --CP_path [PATH_TO_CP_IMAGES] --masks_path [PATH_TO_CELL_MASKS] --file_extension_imgs .tif --file_extension_masks .tif --output_path [OUTPUT_PATH] --masked_patch --patch_size 192
+```
+* Nuclear crops:
+```
+python crop_ROIs.py --CP_path [PATH_TO_CP_IMAGES] --masks_path [PATH_TO_NUCLEAR_MASKS] --file_extension_imgs .tif --file_extension_masks .tif --output_path [OUTPUT_PATH] --masked_patch --patch_size 60
+```
+* Nucleocentric crops:
+```
+python crop_ROIs.py --CP_path [PATH_TO_CP_IMAGES] --masks_path [PATH_TO_NUCLEAR_MASKS] --file_extension_imgs .tif --file_extension_masks .tif --output_path [OUTPUT_PATH] --patch_size 60
+```
+This step results in small ROI crops.
+
+## (6) Features for random forest
+Handcrafted features can be extracted from the original image. These features need to be extracted from the CP images. There are 2 separate scripts that can be merged using the unique identifier. Run this code in the cmd terminal.
+* Intensity and shape features:
+```
+python get_intensity_features.py --GT_path [PATH_TO_CP_IMAGES] --GT_channel_names DAPI FITC Cy3 Cy5 --masks_path [PATH_TO_MASKS] --layout [...\layout.xlsx] --file_extension_GT .tif --file_extension_masks .tif --output_path [OUTPUT_PATH] --masked_patch --patch_size 192
+```
+* Texture features:
+```
+python get_texture_features.py --CP_path [PATH_TO_CP_IMAGES] --masks_path [PATH_TO_MASKS] --file_extension_imgs .tif --file_extension_masks .tif --output_path [OUTPUT_PATH] --masked_patch --patch_size 192
+```
+The resulting .csv file can be given as input to the random forest or can be used to create PCA, UMAP, ...
+
+## (7) Random Forest
+This code builds a random forest based on the hancrafted features. Run this code in the cmd terminal.
+```
+python train_evaluate_RF.py --data_file [...\features.csv] --regions2use all --channels2use all --mixed --sample 2000 --random_seed 0
+```
+
+## (8) Convolutional neural network
+This code trains a CNN using the image crops as input. Run this code in the cmd terminal.
+```
+python train_evaluate_CNN.py --input_path [PATH_TO_CP_CROPS] --output_path [OUTPUT_PATH] --target_names astro SHSY5Y --layout [...\layout.xlsx] --GT_data_file [...\GT_data.csv] --channels2use 0 1 2 3 --random_seed 0 --save --mixed --batch_size 100 --sample 2000
+```
+This script outputs a .csv file containining the prediction results, the trained model and a json file with metadata.
+
+## (9) Understanding the CNN
+To understand how the CNN makes it prediction, it is possible to extract the feature embeddings of the model and plot the embeddings using UMAP. Or gradCAM maps can be used to visualize where the attention of the CNN goes to.
+* feature embedding extraction:
+```
+python embeddings.py --input_path [PATH_TO_CP_CROPS] --output_path [OUTPUT_PATH] --model_file [PATH_TO_MODEL_FILE] --target_names astro SHSY5Y --layout [...\layout.xlsx] --GT_data_file [...\GT_data.csv] --random_seed 0 --mixed --sample 2000
+```
+This script results in a .csv file containing the feature embeddings, unique ROI identifier and true class condition.
+* gradCAM heatmap:
+```
+python grad_cam.py --input_path [PATH_TO_CP_CROPS] --model_file [PATH_TO_MODEL_FILE] --target_names astro SHSY5Y --layout [...\layout.xlsx] --GT_data_file [...\GT_data.csv] --channels2use 0 1 2 3 --random_seed 0 --mixed --sample 1
+```
+
+ 
+## HOW TO CITE
 If you use this repository, please cite the paper:
 ```
 @article{Beuckeleer_2024,
