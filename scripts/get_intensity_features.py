@@ -8,10 +8,13 @@ from skimage.measure import regionprops_table
 from skimage.filters import threshold_otsu
 import tifffile
 
-from nucleocentric.utils.utils import get_row_col_pos
-from nucleocentric.utils.io import get_files_in_folder, read_img
-from nucleocentric.utils.transforms import get_patch_box
-from nucleocentric.features.intensity import get_GT_props
+from nucleocentric import (
+    get_files_in_folder,
+    read_img,
+    get_row_col_pos,
+    get_patch_box,
+    get_GT_props
+)
 
 
 def get_GT_props(img_GT, channels, channel_names, region_names, masks, labels, properties, extra_properties, img_name):

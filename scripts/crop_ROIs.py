@@ -5,9 +5,13 @@ from skimage.measure import regionprops_table
 import tifffile
 from tqdm import tqdm
 
-from nucleocentric.utils.io import get_files_in_folder, read_img
-from nucleocentric.utils.transforms import unsqueeze_to_ndim
-from nucleocentric.preprocessing.cropping import get_patch_box, crop_ROI
+from nucleocentric import (
+    get_files_in_folder,
+    read_img,
+    unsqueeze_to_ndim,
+    get_patch_box,
+    crop_ROI
+)
 
 def main(args):
      # Paths to CP and masks a image files

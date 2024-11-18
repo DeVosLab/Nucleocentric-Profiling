@@ -7,19 +7,21 @@ import torch
 from torch.utils.data import DataLoader
 from torchvision.models import resnet50
 from torchvision.transforms import (Compose, Resize)
-
 from pytorch_grad_cam import GradCAM
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 
-
-from nucleocentric.data.datasets import (
-    get_samples_df, DatasetFromDataFrame, my_collate
+from nucleocentric import (
+    load_custom_config,
+    read_tiff,
+    create_composite2D,
+    get_samples_df,
+    DatasetFromDataFrame,
+    my_collate,
+    ToTensorPerChannel,
+    SquarePad,
+    NormalizeTensorPerChannel,
+    SelectChannels
 )
-from nucleocentric.utils.utils import (
-    SquarePad, ToTensorPerChannel, NormalizeTensorPerChannel, SelectChannels,
-    create_composite2D
-)
-from nucleocentric.utils.io import load_custom_config, read_tiff
 
 
 def plot_results(image, gradcam):

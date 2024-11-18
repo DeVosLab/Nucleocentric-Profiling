@@ -11,16 +11,27 @@ from torchvision.models import resnet50
 from torchvision.transforms import Compose
 from torch.utils.data import DataLoader
 
-from nucleocentric.utils.utils import set_random_seeds, seed_worker, my_collate
-from nucleocentric.utils.io import load_custom_config, read_tiff
-from nucleocentric.data.datasets import get_samples_df, DatasetFromDataFrame
-from nucleocentric.utils.transforms import (
-    ToTensorPerChannel, SquarePad, Resize, NormalizeTensorPerChannel, 
-    AugmentBrightness, AugmentContrast, SelectChannels, RandomHorizontalFlip, 
-    RandomVerticalFlip, RandomRotation
-    )
-from nucleocentric.train.train_cnn import train_model, test_accuracy
-
+from nucleocentric import (
+    set_random_seeds,
+    seed_worker,
+    load_custom_config,
+    read_tiff,
+    get_samples_df,
+    DatasetFromDataFrame,
+    my_collate,
+    ToTensorPerChannel,
+    SquarePad,
+    Resize,
+    NormalizeTensorPerChannel,
+    AugmentBrightness,
+    AugmentContrast,
+    SelectChannels,
+    RandomHorizontalFlip,
+    RandomVerticalFlip,
+    RandomRotation,
+    train_model,
+    test_accuracy
+)
 
 def main(args):
     # Time stap the training run

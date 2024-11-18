@@ -14,9 +14,13 @@ from datetime import datetime
 from matplotlib import pyplot as plt
 import scipy
 
-from src.util import get_files_in_folder, read_img, unsqueeze_to_ndim
-from Segment_cells import get_patch_box, crop_ROI
-
+from nucleocentric import (
+    get_files_in_folder,
+    read_img,
+    unsqueeze_to_ndim,
+    get_patch_box,
+    crop_ROI
+)
 
 
 def main(args):

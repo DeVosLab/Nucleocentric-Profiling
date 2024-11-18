@@ -5,10 +5,14 @@ import json
 import tifffile
 import torch
 
-from nucleocentric.utils.io import get_files_in_folder, read_img
-from nucleocentric.utils.transforms import unsqueeze_to_ndim
-from nucleocentric.segmentation.segment_nuclei import load_stardist_model, preprocess_img, segment_nuclei
-
+from nucleocentric import (
+    get_files_in_folder,
+    read_img,
+    unsqueeze_to_ndim,
+    load_stardist_model,
+    preprocess_img_nuclei,
+    segment_nuclei
+)
 
 def main(args):
 	time_stamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
@@ -23,11 +27,6 @@ def main(args):
 	with open(str(file_name), 'w', encoding='utf-8') as f:
 		json.dump(vars(args), f, ensure_ascii=False, indent=4)
 
-	# Set device
-	if torch.cuda.is_available():  
-		device = torch.device("cuda:0") 
-	else:  
-		device = torch.device("cpu")
 	# Load model
 	print('Loading model')
 	model = load_stardist_model()
@@ -47,7 +46,7 @@ def main(args):
 		if img_raw.ndim == 2:
 			img_raw = unsqueeze_to_ndim(img_raw, 4)
 		print('Image preprocessing')
-		_, img_norm_nuclei = preprocess_img(
+		_, img_norm_nuclei = preprocess_img_nuclei(
 			img_raw,
 			nuclei_channel_ind=args.nuclei_channel_ind,
 			pmin=args.pmin,

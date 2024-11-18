@@ -6,9 +6,15 @@ import numpy as np
 import torch
 import tifffile
 
-from nucleocentric.utils.io import get_files_in_folder, read_img
-from nucleocentric.utils.transforms import unsqueeze_to_ndim, max_proj
-from nucleocentric.segmentation.segment_cells import load_cellpose_model, preprocess_img, segment_cells
+from nucleocentric import (
+	get_files_in_folder,
+	read_img,
+	unsqueeze_to_ndim,
+	max_proj,
+	load_cellpose_model,
+	preprocess_img_cells,
+	segment_cells
+)
 
 def main(args):
 	time_stamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
@@ -66,7 +72,7 @@ def main(args):
 			output_path_max.mkdir(parents=True, exist_ok=True)
 			tifffile.imwrite(output_path_max.joinpath(filename + '_max.tif'), img_raw)
 		print('Image preprocessing')
-		input_img, channels, img_norm, img_med, img_nuclei, _ = preprocess_img(
+		input_img, channels, _, _, _, _ = preprocess_img_cells(
 			img_raw,
 			nuclei_channel_ind=args.nuclei_channel_ind,
 			channels2use=args.channels2use,

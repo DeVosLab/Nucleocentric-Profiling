@@ -1,40 +1,51 @@
-"""
-Nucleocentric-profiling: Cell identity classification in mixed neural cultures
-"""
+# Import key segmentation functions
+from .segmentation.segment_cells import (
+    load_cellpose_model,
+    preprocess_img as preprocess_img_cells,
+    segment_cells
+)
+from .segmentation.segment_nuclei import (
+    load_stardist_model,
+    preprocess_img as preprocess_img_nuclei,
+    segment_nuclei
+)
 
-# Core functionality imports
-from nucleocentric.segmentation.segment_cells import segment_cells
-from nucleocentric.segmentation.segment_nuclei import segment_nuclei
-from nucleocentric.preprocessing.alignment import align_GT2CP
-from nucleocentric.preprocessing.cropping import crop_ROIs
-from nucleocentric.train.train_cnn import train_model as train_CNN
-from nucleocentric.train.train_rf import train_model as train_RF
-from scripts.grad_cam import generate_gradcam
-from scripts.UMAP import generate_umap
+# Import preprocessing functions
+from .preprocessing.alignment import align_GT2CP, align_imgs
+from .preprocessing.cropping import (
+    crop_center,
+    get_patch_box,
+    bbox_crop
+)
+
+# Import utility functions
+from .utils.io import (
+    get_files_in_folder,
+    read_img,
+    read_tiff,
+    read_nd2,
+    get_subfolders
+)
+from .utils.utils import (
+    set_random_seeds,
+    normalize,
+    create_composite2D,
+    get_row_col_pos
+)
+from .utils.transforms import (
+    max_proj,
+    unsqueeze_to_ndim,
+    squeeze_to_ndim,
+    get_padding,
+    ShapePad,
+    SquarePad,
+    ToTensorPerChannel,
+    NormalizeTensorPerChannel,
+    SelectChannels
+)
+
+# Import training functions
+from .train.train_cnn import train_model, test_accuracy
 
 # Version info
-__version__ = '0.1.0'
-__author__ = 'Sarah De Beuckeleer et al.'
-
-# Package metadata
-__all__ = [
-    # Segmentation
-    'segment_cells',
-    'segment_nuclei',
-    
-    # Preprocessing
-    'align_GT2CP',
-    'crop_ROIs',
-    
-    # Feature extraction
-    'get_intensity_features',
-    'get_texture_features',
-    
-    # Model training
-    'train_CNN',
-    'train_RF',
-    
-    # Evaluation
-    'generate_gradcam',
-    'generate_umap'
-]
+__version__ = '1.0.0'

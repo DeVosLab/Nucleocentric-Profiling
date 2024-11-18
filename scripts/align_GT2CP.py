@@ -2,13 +2,17 @@ from argparse import ArgumentParser
 from datetime import datetime
 from pathlib import Path
 import numpy as np
+from skimage.segmentation import clear_border
 import tifffile
 from tqdm import tqdm
 
-from nucleocentric.utils.io import get_files_in_folder, read_img
-from nucleocentric.utils.utils import get_row_col_pos
-from nucleocentric.preprocessing.alignment import align_GT2CP
-from nucleocentric.preprocessing.cropping import crop_center, clear_border
+from nucleocentric import (
+    get_files_in_folder,
+    read_img,
+    get_row_col_pos,
+    align_GT2CP,
+    crop_center
+)
 
 def main(args):
     timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
