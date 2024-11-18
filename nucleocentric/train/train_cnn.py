@@ -6,8 +6,6 @@ from tqdm import tqdm
 from sklearn.metrics import confusion_matrix
 import pandas as pd
 
-from nucleocentric.utils.utils import get_row_col_pos
-
 
 def test_accuracy(model, dataloader, device, loss_fn=torch.nn.CrossEntropyLoss()):
     model.eval()

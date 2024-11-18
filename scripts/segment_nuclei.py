@@ -56,7 +56,10 @@ def main(args):
 		)
 		masks_nuclei = segment_nuclei(
 			model,
-			img_norm_nuclei)
+			img_norm_nuclei,
+			args.probability,
+			args.nms_thresh
+		)
 		if output_path:
 			filename = file_path.stem
 			output_path_masks = output_path.joinpath('masks')
@@ -79,8 +82,8 @@ def parse_arguments():
 		help='Upper percentile for image normalization')
 	parser.add_argument('--probability', type=float, default=0.6,
 		help='Probability threshold for cell detection')
-	parser.add_argument('--overlap', type=float, default=0.03,
-		help='Overlap treshold allowed for object detection')
+	parser.add_argument('--nms_thresh', type=float, default=0.3,
+		help='NMS treshold ')
 	parser.add_argument('--gpu', action='store_true', 
 		help='Whether to try to use GPU or not if GPU is available')
 	parser.add_argument('--nuclei_channel_ind', type=int, default=0,
