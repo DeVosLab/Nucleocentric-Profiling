@@ -3,7 +3,9 @@ from datetime import datetime
 from pathlib import Path
 import json
 import tifffile
-import torch
+
+import sys
+sys.path.append(str(Path(__file__).parent.parent))
 
 from nucleocentric import (
     get_files_in_folder,

@@ -11,6 +11,9 @@ from torchvision.models import resnet50
 from torchvision.transforms import Compose
 from torch.utils.data import DataLoader
 
+import sys
+sys.path.append(str(Path(__file__).parent.parent))
+
 from nucleocentric import (
     set_random_seeds,
     seed_worker,

@@ -10,6 +10,9 @@ from torchvision.transforms import (Compose, Resize)
 from pytorch_grad_cam import GradCAM
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 
+import sys
+sys.path.append(str(Path(__file__).parent.parent))
+
 from nucleocentric import (
     load_custom_config,
     read_tiff,

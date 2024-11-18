@@ -11,8 +11,9 @@ import skimage.feature as feature
 import pandas as pd
 from skimage.filters import threshold_otsu
 from datetime import datetime
-from matplotlib import pyplot as plt
-import scipy
+
+import sys
+sys.path.append(str(Path(__file__).parent.parent))
 
 from nucleocentric import (
     get_files_in_folder,

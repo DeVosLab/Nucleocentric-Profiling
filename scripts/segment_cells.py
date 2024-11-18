@@ -6,6 +6,9 @@ import numpy as np
 import torch
 import tifffile
 
+import sys
+sys.path.append(str(Path(__file__).parent.parent))
+
 from nucleocentric import (
 	get_files_in_folder,
 	read_img,

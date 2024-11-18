@@ -8,6 +8,9 @@ from torchvision.transforms import (Compose, Resize)
 from tqdm import tqdm
 import pandas as pd
 
+import sys
+sys.path.append(str(Path(__file__).parent.parent))
+
 from nucleocentric import (
     load_custom_config,
     read_tiff,
