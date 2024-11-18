@@ -1,7 +1,5 @@
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
-from pathlib import Path
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -10,13 +8,6 @@ from sklearn.pipeline import make_pipeline
 import umap  
 import geopandas as gpd
 import shapely.geometry
-from scipy import stats
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
-from sklearn.linear_model import LogisticRegression  
-from sklearn.metrics import confusion_matrix
-from matplotlib.colors import ListedColormap
 
 
 def z_score(df):
