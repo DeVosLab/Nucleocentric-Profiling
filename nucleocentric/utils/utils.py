@@ -1,22 +1,11 @@
 import os
 import re
 import platform
-import json
 import random
-import numbers
-from pathlib import Path
-
 import numpy as np
-import tifffile
 import torch
-from torchvision.transforms import functional as F
-from torchvision.datasets import ImageFolder
-from nd2reader import ND2Reader
-from torch.utils.data import Dataset
-from matplotlib import pyplot as plt
 from matplotlib.colors import to_rgb
 from skimage.filters import threshold_otsu
-from sklearn.model_selection import StratifiedGroupKFold
 
 # Reproducibility
 def set_random_seeds(seed=0):

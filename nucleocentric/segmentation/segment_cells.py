@@ -1,23 +1,5 @@
-import sys
-
-path = r'cellpose'
-
-if path not in sys.path:
-	sys.path.append(path)
-
-import os
-from datetime import datetime
-from argparse import ArgumentParser
-from pathlib import Path
-import json
-
 import numpy as np
-import skimage
-import tifffile
-import torch
-from matplotlib import pyplot as plt
 from skimage.filters import median
-from skimage.measure import regionprops_table
 from skimage.morphology import disk, ball
 from skimage.segmentation import clear_border
 
