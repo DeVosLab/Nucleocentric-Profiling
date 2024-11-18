@@ -45,7 +45,7 @@ def main(args):
         file_masks = next(x for x in masks_files if get_row_col_pos(x.name) == (row, col, pos))
         img_CP = read_img(file_CP)
         img_name = f'{row}-{col:02d}-{pos:02d}'
-        print(img_name)
+        print(f'\n{img_name}')
         masks = read_img(file_masks)
 
         labels = np.unique(masks)

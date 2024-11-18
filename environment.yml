@@ -23,6 +23,7 @@ dependencies:
   - pytorch=1.13.0
   - torchvision
   - tensorboard
+  - openpyxl
   - pip
   - pip:
       - napari==0.4.17

@@ -92,15 +92,8 @@ def main(args):
 			anisotropy=args.anisotropy,
 			stitch_threshold=args.stitch_threshold
 			)
-		print('Cropping ROIs')
-		if output_path:
-			filename = file_path.stem
-			if args.save_masks:
-				output_path_masks = output_path.joinpath('masks')
-				output_path_masks.mkdir(parents=True, exist_ok=True)
-				output_path_result_img = output_path.joinpath('result_img')
-				output_path_result_img.mkdir(parents=True, exist_ok=True)
-				tifffile.imwrite(output_path_masks.joinpath(filename + '_masks.tif'), masks)
+		filename = file_path.stem
+		tifffile.imwrite(output_path.joinpath(filename + '_masks.tif'), masks)
 
 
 def parse_arguments():
@@ -111,10 +104,6 @@ def parse_arguments():
 		help='Output path were ROIs, masks and result images will be stored')
 	parser.add_argument('--file_extension', type=str, default='.tif',
 		help='Specify type extension for the input files.')
-	parser.add_argument('--save_masks', action='store_true', 
-		help='Store masks after segmentation as separate .tif file')
-	parser.add_argument('--save_raw', action='store_true',
-		help='Save ROIs cropped from raw image instead of normalized image.')
 	parser.add_argument('--max_proj', action='store_true',
 		help='Perform maximum projection over all Z-plannes (axis=0)')
 	parser.add_argument('--pmin', type=float, default=0.01,
@@ -133,8 +122,6 @@ def parse_arguments():
 		help='Whether to use average prediction of four models, or of single model')
 	parser.add_argument('--diameter', type=int, default=None,
 		help='Estimated diameter of cells present in the image')
-	parser.add_argument('--omni', action='store_true',
-		help='Use omnipose model instead of cellpose.')
 	parser.add_argument('--channels2use', nargs='+', type=int, choices=[0,1,2,3,4,5,6,7,8], default=[0,1,2,3,4,5],
 		help='Specify the channels to use for segmentation')
 	parser.add_argument('--channels2store', nargs='+', type=int, choices=[0,1,2,3,4,5,6,7,8], default=[0,1,2,3,4,5],

@@ -8,7 +8,7 @@ import warnings
 import pandas as pd
 import math
 from torchvision.models import resnet50
-from torchvision.transforms import Compose
+from torchvision.transforms import Compose, Resize, RandomHorizontalFlip, RandomVerticalFlip, RandomRotation
 from torch.utils.data import DataLoader
 
 import sys
@@ -17,21 +17,16 @@ sys.path.append(str(Path(__file__).parent.parent))
 from nucleocentric import (
     set_random_seeds,
     seed_worker,
-    load_custom_config,
     read_tiff,
     get_samples_df,
     DatasetFromDataFrame,
     my_collate,
     ToTensorPerChannel,
     SquarePad,
-    Resize,
     NormalizeTensorPerChannel,
     AugmentBrightness,
     AugmentContrast,
     SelectChannels,
-    RandomHorizontalFlip,
-    RandomVerticalFlip,
-    RandomRotation,
     train_model,
     test_accuracy
 )
@@ -41,8 +36,7 @@ def main(args):
     time_stamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
 
     # Define the input and output path
-    custom_config = load_custom_config()
-    args.input_path = Path(custom_config['data_path']).joinpath(args.input_path)    
+    args.input_path = Path(args.input_path)    
 
     # Train model for each random seed
     experiments={}
@@ -94,7 +88,7 @@ def main(args):
     
         # Stratify dataset in train/validation/test 
         target_names = args.target_names
-        df, = get_samples_df(
+        df = get_samples_df(
             args.input_path,
             layout_filepath=args.layout,
             target_names=target_names,
@@ -118,27 +112,48 @@ def main(args):
         if (n_train_wells < 2):
             n_train_wells = 2
         print(n_test_wells, n_train_wells, n_val_wells)
-        test_wells = df.groupby("target").sample(n=int(n_test_wells/2), random_state=seed); test_wells = test_wells['well'].unique()
-        test_df = df[df['well'].isin(test_wells)]; val_df = df[~df['well'].isin(test_wells)]
-        val_wells = val_df.groupby("target").sample(n=int(n_val_wells/2), random_state=seed); val_wells = val_wells['well'].unique()
+        test_wells = df.groupby("target").sample(n=int(n_test_wells/2), random_state=seed);
+        test_wells = test_wells['well'].unique()
+        test_df = df[df['well'].isin(test_wells)];
+        val_df = df[~df['well'].isin(test_wells)]
+        val_wells = val_df.groupby("target").sample(n=int(n_val_wells/2), random_state=seed);
+        val_wells = val_wells['well'].unique()
         val_df = df[df['well'].isin(val_wells)]
-        train_df = df[~df['well'].isin(val_wells)]; train_df = train_df[~train_df['well'].isin(test_wells)]
+        train_df = df[~df['well'].isin(val_wells)];
+        train_df = train_df[~train_df['well'].isin(test_wells)]
         print(len(train_df), len(test_df), len(val_df))
         ## subsample the dataset, make sure both classes are both of equal size
         if (args.sample == 'max'):
-            sample_train = min(train_df['target'].value_counts()); sample_val = min(val_df['target'].value_counts()); sample_test = min(test_df['target'].value_counts())
-            test_df = test_df.groupby("target").sample(n=int(sample_test), random_state=seed); train_df = train_df.groupby("target").sample(n=int(sample_train), random_state=seed); val_df = val_df.groupby("target").sample(n=int(sample_val), random_state=seed)            
+            sample_train = min(train_df['target'].value_counts());
+            sample_val = min(val_df['target'].value_counts());
+            sample_test = min(test_df['target'].value_counts())
+            test_df = test_df.groupby("target").sample(n=int(sample_test), random_state=seed);
+            train_df = train_df.groupby("target").sample(n=int(sample_train), random_state=seed);
+            val_df = val_df.groupby("target").sample(n=int(sample_val), random_state=seed)            
         elif (args.sample == 'oversampling'):
-            sample_train = max(train_df['target'].value_counts()); sample_val = max(val_df['target'].value_counts()); sample_test = max(test_df['target'].value_counts())
-            test_df = test_df.groupby("target").sample(n=int(sample_test), random_state=seed, replace = True); train_df = train_df.groupby("target").sample(5000, random_state=seed, replace = True); val_df = val_df.groupby("target").sample(n=int(sample_val), random_state=seed, replace = True)            
+            sample_train = max(train_df['target'].value_counts());
+            sample_val = max(val_df['target'].value_counts());
+            sample_test = max(test_df['target'].value_counts())
+            test_df = test_df.groupby("target").sample(n=int(sample_test), random_state=seed, replace = True);
+            train_df = train_df.groupby("target").sample(5000, random_state=seed, replace = True);
+            val_df = val_df.groupby("target").sample(n=int(sample_val), random_state=seed, replace = True)            
         elif(args.sample == 'unequal'):
-            test_df = test_df; train_df = train_df; val_df = val_df
+            test_df = test_df;
+            train_df = train_df;
+            val_df = val_df
         else:
-            sample_train = int(args.sample); sample_test = int(args.sample)/3; sample_val = int(args.sample)/10
-            test_df = test_df.groupby("target").sample(n=int(sample_test), random_state=seed); train_df = train_df.groupby("target").sample(n=int(sample_train), random_state=seed); val_df = val_df.groupby("target").sample(n=int(sample_val), random_state=seed)
-        test_df['subset'] = 'test'; train_df['subset'] = 'train';val_df['subset'] = 'val'
-        df = train_df.append(pd.DataFrame(data = val_df), ignore_index=True); df = df.append(pd.DataFrame(data = test_df), ignore_index=True)
-        df = df.reset_index(drop = True)            
+            sample_train = int(args.sample);
+            sample_test = int(args.sample)/3;
+            sample_val = int(args.sample)/10
+            test_df = test_df.groupby("target").sample(n=int(sample_test), random_state=seed);
+            train_df = train_df.groupby("target").sample(n=int(sample_train), random_state=seed);
+            val_df = val_df.groupby("target").sample(n=int(sample_val), random_state=seed)
+        test_df['subset'] = 'test';
+        train_df['subset'] = 'train';
+        val_df['subset'] = 'val'
+        # df = train_df.append(pd.DataFrame(data = val_df), ignore_index=True);
+        # df = df.append(pd.DataFrame(data = test_df), ignore_index=True)
+        # df = df.reset_index(drop = True)            
         print(len(test_df), len(train_df), len(val_df))
         train_df['well'].to_csv('train_instances.csv')
 
@@ -204,7 +219,7 @@ def main(args):
             # Create model, optimizer and lr scheduler
             n_targets = len(target_names)
             n_channels = len(args.channels2use)
-            model = resnet50(pretrained=False)
+            model = resnet50(weights=None)
             model.conv1 = torch.nn.Conv2d(
                 n_channels, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False
                 )
@@ -239,8 +254,8 @@ def main(args):
                 )
             tnr, fpr, fnr, tpr = 100*cf_matrix.ravel()
 
-            cf_matrix = pd.DataFrame(cf_matrix, index = [i for i in test_df.target_names],
-                        columns = [i for i in test_df.target_names])
+            cf_matrix = pd.DataFrame(cf_matrix, index = [i for i in datasets['test'].target_names],
+                        columns = [i for i in datasets['test'].target_names])
 
             print(f'Test set accuracy {accuracy}')
             print()
@@ -319,7 +334,7 @@ def main(args):
                     results_json['data_info'] = data_info
                 except:
                     warnings.warn(
-                        f"No info.json file found in the input path {Path(custom_config['data_path']).joinpath(args.input_path)}. " +
+                        f"No info.json file found in the input path {Path(args.input_path)}. " +
                         "No info on the dataset is added to the output .pth and .json file."
                         )
                 # Store .pth file with results
@@ -380,9 +395,8 @@ def main(args):
 def parse_arguments():
     parser = ArgumentParser()
     parser.add_argument('-i', '--input_path', type=str, required=True, 
-        help='Relative path from the data_path specified in the custom_config.json file. \
-            The input_path holds the class subfolders.')
-    parser.add_argument('--output_path', type=str, required=True,
+        help='The input_path holding  subfolders that contain cell crops.')
+    parser.add_argument('-o', '--output_path', type=str, required=True,
         help='Output path where results are stored')
     parser.add_argument('-t', '--target_names', type=str, nargs='+', required=True,
         help='Targets to use for training in the classification problem. Samples with other targets with be ignored')

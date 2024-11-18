@@ -6,7 +6,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 from torchvision.models import resnet50
-from torchvision.transforms import (Compose, Resize)
+from torchvision.transforms import Compose, Resize
 from pytorch_grad_cam import GradCAM
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 
@@ -14,7 +14,6 @@ import sys
 sys.path.append(str(Path(__file__).parent.parent))
 
 from nucleocentric import (
-    load_custom_config,
     read_tiff,
     create_composite2D,
     get_samples_df,
@@ -23,7 +22,9 @@ from nucleocentric import (
     ToTensorPerChannel,
     SquarePad,
     NormalizeTensorPerChannel,
-    SelectChannels
+    SelectChannels,
+    set_random_seeds,
+    seed_worker
 )
 
 
@@ -56,15 +57,17 @@ def plot_results(image, gradcam):
     ax[2,1].imshow(gradcam, cmap='turbo', alpha=0.4, interpolation=None) # interpolation='none'
     ax[2,1].axis('off'); ax[2, 1].set_title('Overlay')
     ax[3,1].axis('off')
-    # Save figure
+    # Show figure
     plt.show()
 
 
 
 def main(args):
-        # Define the input and output path
-    custom_config = load_custom_config()
-    args.input_path = Path(custom_config['data_path']).joinpath(args.input_path)
+    # Set random seed
+    generator = set_random_seeds(seed=args.random_seed)
+
+    # Define the input and output path
+    args.input_path = Path(args.input_path)
 
     # Define transformations for preprocessing
     image_size = (args.image_size, args.image_size)
@@ -108,13 +111,16 @@ def main(args):
         batch_size=batch_size,
         shuffle=False,
         num_workers=n_workers,
-        collate_fn=my_collate
+        collate_fn=my_collate,
+        generator=generator,
+        worker_init_fn=seed_worker,
+
     )
 
     # Create model
     n_targets = len(targets)
     n_channels = len(args.channels2use)
-    model = resnet50(pretrained=False)
+    model = resnet50(weights=None)
     model.conv1 = torch.nn.Conv2d(
         n_channels, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False
         )
@@ -160,27 +166,21 @@ def parse_arguments():
         help='Size (H,W) of the input images for the model')
     parser.add_argument('--channels2use', nargs='+', type=int, choices=[0,1,2,3,4,5], default=[0,1,2,3,4,5],
 		help='Specify the channels to use for training the classifier')
-    parser.add_argument('--mixed', action='store_true',
+    parser.add_argument('--mixed_culture', action='store_true',
         help='mixed coculture')
     parser.add_argument('-b', '--batch_size', type=int, default=256,
         help='Number of samples in each batch during training')
     parser.add_argument('--sample', type=str, required=True,
         help='sample dataset')
+    parser.add_argument('-r', '--random_seed', type=int, default=0,
+        help='Random seeds to be used set for reproducibility.')
 
 
     args = parser.parse_args()
 
-    if isinstance(args.random_seed, int):
-        # Turn into list
-        args.random_seed = [args.random_seed]
-
     if isinstance(args.target_names, str):
         # Turn into list
         args.target_names = [args.target_names]
-
-    if sum(args.split) != 1.0:
-        raise ValueError(f'Train, val and test split should sum up to 1.0, ' \
-            f'but got {args.split[0]} + {args.split[0]} + {args.split[0]} = {sum(args.split)}')
 
     args.channels2use = list(args.channels2use) if isinstance(args.channels2use, int) else args.channels2use
 

@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-import torch.nn.functional as F
+import torchvision.transforms.functional as F
 from torch.utils.data.dataloader import default_collate
 import numbers
 

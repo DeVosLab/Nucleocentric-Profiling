@@ -62,11 +62,7 @@ def main(args):
 		)
 		if output_path:
 			filename = file_path.stem
-			output_path_masks = output_path.joinpath('masks')
-			output_path_masks.mkdir(parents=True, exist_ok=True)
-			output_path_result_img = output_path.joinpath('result_img')
-			output_path_result_img.mkdir(parents=True, exist_ok=True)
-			tifffile.imwrite(output_path_masks.joinpath(filename + '_masks_nuclei.tif'), masks_nuclei)
+			tifffile.imwrite(output_path.joinpath(filename + '_masks_nuclei.tif'), masks_nuclei)
 
 def parse_arguments():
 	parser = ArgumentParser()

@@ -16,7 +16,6 @@ from nucleocentric import (
     read_img,
     get_row_col_pos,
     get_patch_box,
-    get_GT_props
 )
 
 

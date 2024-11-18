@@ -130,7 +130,7 @@ def get_samples_df(input_path, layout_filepath, target_names=None, file_extensio
     img_folders = [folder.stem for folder in input_path.iterdir() \
         if folder.is_dir() and not folder.stem.startswith('.')]
     dataset, sample_paths = [], []
-    rows, cols, positions, targets, densities, ratios_astro, ratios_SHSY5Y = [], [], [], [], [], [], []
+    rows, cols, positions, targets = [], [], [], []
     for img_folder in tqdm(img_folders):
         img_folder = input_path.joinpath(img_folder)
         img_folder_name = img_folder.name

@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 from torchvision.models import resnet50
-from torchvision.transforms import (Compose, Resize)
+from torchvision.transforms import Compose, Resize
 from tqdm import tqdm
 import pandas as pd
 
@@ -12,23 +12,25 @@ import sys
 sys.path.append(str(Path(__file__).parent.parent))
 
 from nucleocentric import (
-    load_custom_config,
     read_tiff,
     get_samples_df,
     DatasetFromDataFrame,
     my_collate,
     ToTensorPerChannel,
     SquarePad,
-    Resize,
     NormalizeTensorPerChannel,
-    SelectChannels
+    SelectChannels,
+    set_random_seeds,
+    seed_worker
 )
 
 
 def main(args):
+    # Set random seed
+    generator = set_random_seeds(seed=args.random_seed)
+
     # Define the input and output path
-    custom_config = load_custom_config()
-    args.input_path = Path(custom_config['data_path']).joinpath(args.input_path)
+    args.input_path = Path(args.input_path)
 
     # Train model for each random seed
     experiments={}
@@ -48,7 +50,7 @@ def main(args):
         ])
         
         
-        df, _, _ = get_samples_df(
+        df = get_samples_df(
             args.input_path,
             target_names=args.target_names,
             layout_filepath=args.layout,
@@ -77,13 +79,15 @@ def main(args):
             batch_size=batch_size,
             shuffle=False,
             num_workers=n_workers,
-            collate_fn=my_collate
+            collate_fn=my_collate,
+            generator=generator,
+            worker_init_fn=seed_worker,
         )
     
         # Create model
         n_targets = len(targets)
         n_channels = len(args.channels2use)
-        model = resnet50(pretrained=False)
+        model = resnet50(weights=None)
         model.conv1 = torch.nn.Conv2d(
             n_channels, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False
             )
@@ -91,7 +95,7 @@ def main(args):
 
         # Load trained weights
         model_file = torch.load(args.model_file)
-        model.load_state_dict(model_file['final_model_state_dict'])
+        model.load_state_dict(model_file['best_val_model_state_dict'])
 
         # Get target layers to extract embeddings from
         model = torch.nn.Sequential(*list(model.children())[:-1])
@@ -120,11 +124,9 @@ def main(args):
 def parse_arguments():
     parser = ArgumentParser()
     parser.add_argument('-i', '--input_path', type=str, required=True, 
-        help='Relative path from the data_path specified in the custom_config.json file. \
-            The input_path holds the class subfolders.')
+        help='The input_path holding  subfolders that contain cell crops.')
     parser.add_argument('-o', '--output_path', type=str, required=True, 
-        help='Relative path from the data_path specified in the custom_config.json file. \
-            The input_path holds the class subfolders.')
+        help='Output_path where embeddings will be stored')
     parser.add_argument('--model_file', type=str, required=True,
         help='Filepath of trained model state_dict')
     parser.add_argument('-t', '--target_names', type=str, nargs='+', required=True,
@@ -143,21 +145,15 @@ def parse_arguments():
         help='Number of samples in each batch during training')
     parser.add_argument('--sample', type=str, required=True,
         help='sample dataset')
+    parser.add_argument('-r', '--random_seed', type=int, default=0,
+        help='Random seed to be used set for reproducibility.')
 
 
     args = parser.parse_args()
 
-    if isinstance(args.random_seed, int):
-        # Turn into list
-        args.random_seed = [args.random_seed]
-
     if isinstance(args.target_names, str):
         # Turn into list
         args.target_names = [args.target_names]
-
-    if sum(args.split) != 1.0:
-        raise ValueError(f'Train, val and test split should sum up to 1.0, ' \
-            f'but got {args.split[0]} + {args.split[0]} + {args.split[0]} = {sum(args.split)}')
 
     args.channels2use = list(args.channels2use) if isinstance(args.channels2use, int) else args.channels2use
 
