@@ -79,7 +79,7 @@ def parse_arguments():
 	parser.add_argument('--probability', type=float, default=0.6,
 		help='Probability threshold for cell detection')
 	parser.add_argument('--nms_thresh', type=float, default=0.3,
-		help='NMS treshold ')
+		help='NMS treshold')
 	parser.add_argument('--gpu', action='store_true', 
 		help='Whether to try to use GPU or not if GPU is available')
 	parser.add_argument('--nuclei_channel_ind', type=int, default=0,
