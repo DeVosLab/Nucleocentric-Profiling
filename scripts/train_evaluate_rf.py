@@ -20,16 +20,14 @@ def main(args):
     df_GT = pd.read_csv(args.GT_data_file)
     df_GT = df_GT[['ROI_img_name','true_condition']] 
     df_merged = pd.merge(df, df_GT, on='ROI_img_name')  #merge the true condition with the feature dataframe
-    mixed = args.mixed
-    if mixed == 'No':                       # depending on whether you want monocultures or cocultures, you need either the true condition or the target (layout)
-        df = df_merged.loc[df_merged['target'] != 'co-culture'] 
-    elif mixed =='Yes':
+    if args.mixed_culture: # depending on whether you want monocultures or cocultures, you need either the true condition or the target (layout)
         df = df_merged.loc[df_merged['target'] == 'co-culture'] 
         df = df[df['true_condition'].str.contains('inconclusive')==False]
         df = df.drop(['target'], axis = 1)
         df.rename(columns = {'true_condition':'target'}, inplace = True)
     else:
-        print("Error: do you want mixed or monoculture?")
+        df = df_merged.loc[df_merged['target'] != 'co-culture'] 
+       
     ord_enc = OrdinalEncoder()
     df["target"] = ord_enc.fit_transform(df[["target"]])  # 'target' is the variable which we want to predict
 
@@ -237,7 +235,7 @@ def parse_arguments():
         help='Which region you want to analyse? Nucleus, cyto, cell or all')
     parser.add_argument('--channels2use', type=str, required=True,
         help='Which input channels do you want to use? DAPI, FITC, Cy3, Cy5 or all')
-    parser.add_argument('--mixed', type=str, required=True,
+    parser.add_argument('--mixed_culture', action='store_true',
         help='Classification of monoculture or coculture? Yes or No')
     parser.add_argument('--sample', type=int, required=True,
         help='number of instances per group used for training')
