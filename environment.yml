@@ -21,7 +21,7 @@ dependencies:
   - seaborn
   - colorcet
   - pytorch=1.13.0
-  - torchvision
+  - torchvision=0.14.0
   - tensorboard
   - openpyxl
   - pip
