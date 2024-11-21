@@ -4,7 +4,8 @@ Link to ELife paper: https://elifesciences.org/reviewed-preprints/95273v1#s4
 
 Execution of the data analysis should be performed by running the scripts (located in the `scripts` folder) in a sequential order. Each script contains several argparse arguments. These arguments are parameters that can be tuned at several points in the data-analysis pipeline to result in an optimal cell classification performance. The action of each argument is listed below for each script. A short description of the argument's action can also be found at the bottom of the code of each script. The flowchart details the order in which the scripts should be executed based on the type of analysis you want to perform. 
 
-![GitHub_flowchart](https://github.com/user-attachments/assets/28b160a0-3fb4-4994-9f5b-1b4b95459a91)
+![GitHub_flowchart](https://github.com/user-attachments/assets/c353d29c-d859-4457-b9c7-c30287e9474e)
+
 
 An accompanying test dataset is included and can be downloaded using the following link: https://figshare.com/articles/dataset/Nucleocentric-Profiling/27141441?file=49522557. The zip-file contains 2x 480 raw image files of cell painting and associated ground-truth images of a co-culture of 1321N1 and SH-SY5Y cells. The folder also contains a layout-file detailing the plate layout. A step-by-step tutorial on the test-dataset can be found below. 
 
