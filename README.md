@@ -40,7 +40,12 @@ conda install -c pytorch -c nvidia pytorch=1.13.0 torchvision=0.14.0 pytorch-cud
 
 Each script executes distinct steps explained below. The scripts make use of the source code provided in the `nucleocentric` subfolder. Each script should be executed from the terminal/command prompt in the root directory of this repository. Make sure the virtual environment is activated (see instructions above).
 
-## 1) Segmentation
+## 1) Set filenames
+
+All filenames should be in the format "X-YY-ZZ" where X refers to the well plate row, Y refers to the well plate column and Z refers to the position of the image in the well.
+For the images in the test dataset, the script included can be used to rename all files correctly. 
+
+## 2) Segmentation
 **Full cell segmentation**
 
 Scripts for cell and nuclei segmentation. Identification of ROIs in the CP image is the first required step for further single cell classification. Either cell segmentation (for whole cell crops) or nuclear segmentation (for nuclear and nucleocentric crops) is performed. Cell segmentation makes use of Cellpose, while nuclei segmentation relies on Stardist. We found the latter to be most reliable in dense cultures.
@@ -262,7 +267,7 @@ The resulting .csv file can be given as input to the random forest or can be use
 ## (7) Random Forest
 This code builds a random forest based on the hancrafted features. Run this code in the cmd terminal.
 ```
-python scripts/train_evaluate_RF.py --data_file [...\features.csv] --regions2use all --channels2use all --mixed_culture --sample 2000 --random_seed 0
+python scripts/train_evaluate_RF.py --data_file [...\features.csv] --regions2use all --channels2use all --mixed_culture --sample 2000 --random_seed 0 --GT_data_file [...\GT_data.csv]
 ```
 
 ## (8) Convolutional neural network
