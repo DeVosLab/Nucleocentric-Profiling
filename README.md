@@ -215,15 +215,21 @@ python scripts\grad_cam.py \                                          # Script f
 Install the environment.yml file as described above. Make sure the environment is activated when running the scripts.
 
 The demo dataset (zip-file, 20 GB) contains 480 cell painting images and 480 matched ground truth images. It is associated with a layout file describing the plate layout.
-Download, unzip and store the data locally (e.g., D:\Documents\testdata). The Cell Painting images have 4 channels. The ground truth images have 2 channels (BrdU and EdU).
+Download, unzip and store the data locally (e.g., C:\Users\...\ELIFE2024\CP). The Cell Painting images have 4 channels. The ground truth images have 2 channels (BrdU and EdU).
 
 Download the scripts and store them locally (e.g., in the same folder as the images). We recommend using Visual Studio Code (VSCode) to run the scripts. Upon starting VSCode, activate the correct folder by selecting File > Open folder > [PATH_TO_SCRIPTS\...\PARENT]. Make sure to activate the parent folder containing the 2 subfolders 'nucleocentric' and 'scripts' (both found in this GitHub). Within the 'scripts' folder, all scripts can be found as described within this README and in the flowchart above. Run the code in the terminal by selecting Terminal > New Terminal and typing the commands below.
+
+Example of file structure:
+
+![file_location](https://github.com/user-attachments/assets/963d9e5f-f30c-48ea-abbe-d0e4c1d3f568)
+
+In this example, the data and scripts are stored locally. The images (CP and GT) are stored in the respective folders. Within the folder 'Nucleocentric-Profiling', the subfolders 'nucleocentric' and 'scripts' are located. This parent folder (Nucleocentric-Profiling) is opened in VSCode. The layout file is also found together with the data and scripts.
 
 ## (2) Rename files
 For both the folder containing CP and GT images, rename files to the X-YY-ZZ format. 
 Run the code in the cmd terminal:
 ```
-python scripts\renamer.py --filepath [INPUT_PATH]
+python scripts\renamer.py --filepath C:\Users\...\ELIFE2024\CP
 ```
 
 ## (3) Segment individual cells
@@ -231,11 +237,11 @@ From the CP images, individual ROIs are segmented. This can be either from the f
 Run the code in the cmd terminal:
 * Cell segmentation:
 ```
-python scripts\segment_cells.py -i [INPUT_PATH] -o [OUTPUT_PATH] --file_extension .nd2 --save_masks --gpu --net_avg --channels2use 0 1 2 3 --target cyto
+python scripts\segment_cells.py -i C:\Users\...\ELIFE2024\CP -o C:\Users\...\ELIFE2024\CP\cell_masks --file_extension .nd2 --save_masks --gpu --net_avg --channels2use 0 1 2 3 --target cyto
 ```
 * Nucleus segmentation:
 ```
-python scripts\segment_nuclei.py -i [INPUT_PATH] -o [OUTPUT_PATH] --file_extension .nd2 --gpu
+python scripts\segment_nuclei.py -i C:\Users\...\ELIFE2024\CP -o C:\Users\...\ELIFE2024\CP\nuclei_masks --file_extension .nd2 --gpu
 ```
 This segmentation step generates as output the segmentation masks.
 
@@ -243,7 +249,7 @@ This segmentation step generates as output the segmentation masks.
 The ground truth information was acquired by cyclic staining. This means the multiwell plate is imaged twice. In between imaging cycles, the plate is taken off the microscope stage. As a result, small translational shifts can occur. We need to overlay information from all imaging rounds. Therefore, we perform this alignment step where the ground truth images are translated to perfectly match the CP images and masks.
 Run the code in the cmd terminal: 
 ```
-python scripts\align_GT2CP.py --CP_path [PATH_TO_CP_IMAGES] --GT_path [PATH_TO_GT_IMAGES] --GT_name EdU_BrdU --masks_path [PATH_TO_MASKS] --channels2use_CP 0 --channels2use_GT 0 --file_extension_imgs .nd2  --file_extension_masks .tif --output_path [OUTPUT_PATH]
+python scripts\align_GT2CP.py --CP_path C:\Users\...\ELIFE2024\CP --GT_path C:\Users\...\ELIFE2024\GT --GT_name EdU_BrdU --masks_path C:\Users\...\ELIFE2024\CP\cell_masks --channels2use_CP 0 --channels2use_GT 0 --file_extension_imgs .nd2  --file_extension_masks .tif --output_path C:\Users\...\ELIFE2024
 ```
 This step generates a folder containing aligned CP images, aligned GT images and aligned masks.
 
@@ -251,7 +257,7 @@ This step generates a folder containing aligned CP images, aligned GT images and
 Intensity information can be extracted from the GT images. Based on this intensity data and the presence and absence of fluorescent signal for either marker, a threshold is defined that determines which class the ROIs belong to. 
 The intensity information is extracted by running 'get_intensity_features.py' in the cmd terminal given the GT images as input:
 ```
-python scripts\get_intensity_features.py --GT_path [PATH_TO_ALIGNED_GT_IMAGES] --GT_channel_names EdU BrdU --masks_path [PATH_TO_ALIGNED_MASKS] --layout [...\layout.xlsx] --file_extension_GT .tif --file_extension_masks .tif --output_path [OUTPUT_PATH] --masked_patch --patch_size 60
+python scripts\get_intensity_features.py --GT_path C:\Users\...\ELIFE2024\[timestamp]\GT --GT_channel_names EdU BrdU --masks_path C:\Users\...\ELIFE2024\[timestamp]\masks --layout C:\Users\...\ELIFE2024\layout.xlsx --file_extension_GT .tif --file_extension_masks .tif --output_path C:\Users\...\ELIFE2024\ --masked_patch --patch_size 60
 ```
 This step generates a .csv file containing features (columns) for each ROI (rows). This file is loaded into the 'set_GT_threshold.py' script. This script cannot be run in the terminal since it requires manual examination of the thresholds.
 
@@ -265,15 +271,15 @@ As an output of this step, a 'GT_data.csv' file is generated. This file contains
 The individual ROIs are cropped out of the cell painting image. These crops can be given to the CNN as input. A crop is defined by 2 parameters: patch size and masking. The patch size refers to how large the crop is (expressed in pixels surrounding the centroid of the segmentation mask). Masking determines whether the background (all pixels outside of the segmentation mask) are put to zero or not. Run this code in the cmd terminal.
 * Full cell crops:
 ```
-python scripts\crop_ROIs.py --CP_path [PATH_TO_ALIGNED_CP_IMAGES] --masks_path [PATH_TO_ALIGNED_CELL_MASKS] --file_extension_imgs .tif --file_extension_masks .tif --output_path [OUTPUT_PATH] --masked_patch --patch_size 192
+python scripts\crop_ROIs.py --CP_path C:\Users\...\ELIFE2024\[timestamp]\CP --masks_path C:\Users\...\ELIFE2024\[timestamp]\masks --file_extension_imgs .tif --file_extension_masks .tif --output_path C:\Users\...\ELIFE2024\[timestamp]\crops --masked_patch --patch_size 192
 ```
 * Nuclear crops:
 ```
-python scripts\crop_ROIs.py --CP_path [PATH_TO_ALIGNED_CP_IMAGES] --masks_path [PATH_TO_ALIGNED_NUCLEAR_MASKS] --file_extension_imgs .tif --file_extension_masks .tif --output_path [OUTPUT_PATH] --masked_patch --patch_size 60
+python scripts\crop_ROIs.py --CP_path C:\Users\...\ELIFE2024\[timestamp]\CP --masks_path C:\Users\...\ELIFE2024\[timestamp]\masks --file_extension_imgs .tif --file_extension_masks .tif --output_path C:\Users\...\ELIFE2024\[timestamp]\crops --masked_patch --patch_size 60
 ```
 * Nucleocentric crops:
 ```
-python scripts\crop_ROIs.py --CP_path [PATH_TO_ALIGNED_CP_IMAGES] --masks_path [PATH_TO_ALIGNED_NUCLEAR_MASKS] --file_extension_imgs .tif --file_extension_masks .tif --output_path [OUTPUT_PATH] --patch_size 60
+python scripts\crop_ROIs.py --CP_path C:\Users\...\ELIFE2024\[timestamp]\CP --masks_path C:\Users\...\ELIFE2024\[timestamp]\masks --file_extension_imgs .tif --file_extension_masks .tif --output_path C:\Users\...\ELIFE2024\[timestamp]\crops --patch_size 60
 ```
 This step results in small ROI crops.
 
@@ -281,24 +287,24 @@ This step results in small ROI crops.
 Handcrafted features can be extracted from the original image. These features need to be extracted from the CP images. There are 2 separate scripts that can be merged using the unique identifier. Run this code in the cmd terminal.
 * Intensity and shape features:
 ```
-python scripts\get_intensity_features.py --GT_path [PATH_TO_ALIGNED_CP_IMAGES] --GT_channel_names DAPI FITC Cy3 Cy5 --masks_path [PATH_TO_ALIGNED_MASKS] --layout [...\layout.xlsx] --file_extension_GT .tif --file_extension_masks .tif --output_path [OUTPUT_PATH] --masked_patch --patch_size 192
+python scripts\get_intensity_features.py --GT_path C:\Users\...\ELIFE2024\[timestamp]\CP --GT_channel_names DAPI FITC Cy3 Cy5 --masks_path C:\Users\...\ELIFE2024\[timestamp]\masks --layout C:\Users\...\ELIFE2024\layout.xlsx --file_extension_GT .tif --file_extension_masks .tif --output_path C:\Users\...\ELIFE2024 --masked_patch --patch_size 192
 ```
 * Texture features:
 ```
-python scripts\get_texture_features.py --CP_path [PATH_TO_ALIGNED_CP_IMAGES] --masks_path [PATH_TO_ALIGNED_MASKS] --file_extension_imgs .tif --file_extension_masks .tif --output_path [OUTPUT_PATH] --masked_patch --patch_size 192
+python scripts\get_texture_features.py --CP_path C:\Users\...\ELIFE2024\[timestamp]\CP --masks_path C:\Users\...\ELIFE2024\[timestamp]\masks --file_extension_imgs .tif --file_extension_masks .tif --output_path C:\Users\...\ELIFE2024 --masked_patch --patch_size 192
 ```
 The resulting .csv file can be given as input to the random forest or can be used to create PCA, UMAP, ...
 
 ## (8) Random Forest
 This code builds a random forest based on the hancrafted features. Run this code in the cmd terminal.
 ```
-python scripts\train_evaluate_RF.py --data_file [...\features.csv] --regions2use all --channels2use all --mixed_culture --sample 2000 --random_seed 0 --GT_data_file [...\GT_data.csv]
+python scripts\train_evaluate_RF.py --data_file C:\Users\...\ELIFE2024\features.csv --regions2use all --channels2use all --mixed_culture --sample 2000 --random_seed 0 --GT_data_file C:\Users\...\ELIFE2024\GT_data.csv
 ```
 
 ## (9) Convolutional neural network
 This code trains a CNN using the image crops as input. Run this code in the cmd terminal.
 ```
-python scripts\train_evaluate_cnn.py --input_path [PATH_TO_CP_CROPS] --output_path [OUTPUT_PATH] --target_names astro SHSY5Y --layout [...\layout.xlsx] --GT_data_file [...\GT_data.csv] --channels2use 0 1 2 3 --random_seed 0 --save --mixed_culture --batch_size 100 --sample 2000
+python scripts\train_evaluate_cnn.py --input_path C:\Users\...\ELIFE2024\[timestamp]\crops --output_path C:\Users\...\ELIFE2024\predictions --target_names astro SHSY5Y --layout C:\Users\...\ELIFE2024\layout.xlsx --GT_data_file C:\Users\...\ELIFE2024\GT_data.csv --channels2use 0 1 2 3 --random_seed 0 --save --mixed_culture --batch_size 100 --sample 2000
 ```
 This script outputs a .csv file containining the prediction results, the trained model and a json file with metadata.
 
@@ -306,13 +312,19 @@ This script outputs a .csv file containining the prediction results, the trained
 To understand how the CNN makes it prediction, it is possible to extract the feature embeddings of the model and plot the embeddings using UMAP. Or gradCAM maps can be used to visualize where the attention of the CNN goes to.
 * feature embedding extraction:
 ```
-python scripts\embeddings.py --input_path [PATH_TO_CP_CROPS] --output_path [OUTPUT_PATH] --model_file [PATH_TO_MODEL_FILE] --target_names astro SHSY5Y --layout [...\layout.xlsx] --GT_data_file [...\GT_data.csv] --random_seed 0 --mixed_culture --sample 2000
+python scripts\embeddings.py --input_path C:\Users\...\ELIFE2024\[timestamp]\crops --output_path C:\Users\...\ELIFE2024\predictions --model_file C:\Users\...\ELIFE2024\predictions\....pth --target_names astro SHSY5Y --layout C:\Users\...\ELIFE2024\layout.xlsx --GT_data_file C:\Users\...\ELIFE2024\GT_data.csv --random_seed 0 --mixed_culture --sample 2000
 ```
 This script results in a .csv file containing the feature embeddings, unique ROI identifier and true class condition.
 * gradCAM heatmap:
 ```
-python scripts\grad_cam.py --input_path [PATH_TO_CP_CROPS] --model_file [PATH_TO_MODEL_FILE] --target_names astro SHSY5Y --layout [...\layout.xlsx] --GT_data_file [...\GT_data.csv] --channels2use 0 1 2 3 --random_seed 0 --mixed_culture --sample 1
+python scripts\grad_cam.py --input_path C:\Users\...\ELIFE2024\[timestamp]\crops --model_file C:\Users\...\ELIFE2024\predictions\....pth --target_names astro SHSY5Y --layout C:\Users\...\ELIFE2024\layout.xlsx --GT_data_file C:\Users\...\ELIFE2024\GT_data.csv --channels2use 0 1 2 3 --random_seed 0 --mixed_culture --sample 
 ```
+
+## Validation
+The installation, test dataset and code have been validated on 3 separate devices
+* HP Pavilion: Microsoft Windows 10.0.19045 Build 19045. Intel(R) Core(TM) i7-8550U CPU @ 1.80GHz, 2001 Mhz, 4 Core(s), 8 Logical Processor(s). GPU NVIDIA GeForce GTX 1050.
+* MS-7D04: Microsoft Windows 11 Enterprise 10.022631 Build 22631. 11th Gen Intel(R) Core(TM) i9-11900K @ 3.50GHz, 3504 Mhz, 8 Core(s), 16 Logical Processor(s). GPU NVIDIA GeForce RTX 3090.
+* 
 
  
 ## HOW TO CITE
