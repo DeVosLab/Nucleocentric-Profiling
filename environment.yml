@@ -10,7 +10,7 @@ dependencies:
   - pandas
   - tifffile
   - nd2reader
-  - scipy
+  - scipy=1.9.3
   - scikit-image
   - scikit-learn
   - imbalanced-learn
