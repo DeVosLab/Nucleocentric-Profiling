@@ -24,6 +24,11 @@ Activate the created environment:
 conda activate nucleocentric-py3.8
 ```
 
+
+Example of environment installation: 
+![miniforge_install](https://github.com/user-attachments/assets/f44c5a0e-0f2d-4152-9904-5302433668ce)
+
+
 To support cross-platform compatibility, we did not add GPU-based dependencies for Nvidia GPUs. By making use of CUDA, the speed of model training and inference can be significantly increased. If you have an NVIDIA GPU, follow the commands below to add GPU support:
 
 Uninstall Pytorch:
@@ -36,6 +41,7 @@ Re-install Pytorch and torchvision, and install pytorch-cuda:
 conda install -c pytorch -c nvidia pytorch=1.13.0 torchvision=0.14.0 pytorch-cuda=11.6
 ```
 
+
 # Available scripts and arguments
 
 Each script executes distinct steps explained below. The scripts make use of the source code provided in the `nucleocentric` subfolder. Each script should be executed from the terminal/command prompt in the root directory of this repository. Make sure the virtual environment is activated (see instructions above).
@@ -45,13 +51,21 @@ Each script executes distinct steps explained below. The scripts make use of the
 All filenames should be in the format "X-YY-ZZ" where X refers to the well plate row, Y refers to the well plate column and Z refers to the position of the image in the well.
 For the images in the test dataset, the script included can be used to rename all files correctly. 
 
+```
+python scripts\renamer.py \                                    # Script based on Cellpose for whole cell segmentation                    
+    --filepath [INPUT_PATH] \                                  # Path to the folder with images to rename                                # Required
+    --file_extension_before .nd2 \                             # Extention type of the input images                                      # Default '.nd2'
+    --file_extension_after .nd2 \                              # Extention type of the output images                                     # Default '.nd2'
+```
+
+
 ## 2) Segmentation
 **Full cell segmentation**
 
 Scripts for cell and nuclei segmentation. Identification of ROIs in the CP image is the first required step for further single cell classification. Either cell segmentation (for whole cell crops) or nuclear segmentation (for nuclear and nucleocentric crops) is performed. Cell segmentation makes use of Cellpose, while nuclei segmentation relies on Stardist. We found the latter to be most reliable in dense cultures.
 
 ```
-python scripts/segment_cells.py \                                    # Script based on Cellpose for whole cell segmentation                    
+python scripts\segment_cells.py \                                    # Script based on Cellpose for whole cell segmentation                    
     -i [INPUT_PATH] \                                                # Path to the raw input images                                            # Required
     -o [OUTPUT_PATH] \                                               # Path where the output masks and resulting images can be stored          # Required
     --file_extension [FILE_EXTENSION] \                              # Extention type of the input images                                      # Default '.tif'
@@ -66,7 +80,7 @@ python scripts/segment_cells.py \                                    # Script ba
 
 **Nuclei segmentation** 
 ```
-python scripts/segment_nuclei.py \                                   # Script based on Stardist for nuclei segmentation
+python scripts\segment_nuclei.py \                                   # Script based on Stardist for nuclei segmentation
     -i [INPUT_PATH] \                                                # Path to the raw input images                                            # Required
     -o [OUTPUT_PATH] \                                               # Path where the output masks and resulting images can be stored          # Required
     --file_extension [FILE_EXTENSION] \                              # Extention type of the input images                                      # Default '.nd2'
@@ -84,7 +98,7 @@ Operations performed on the whole image.
 
 GT2CP alignment: necessary for mixed cultures where post-hoc staining was performed to identify the true cell phenotype. The GT image is translated in X and Y to overlap at single-cell level with the CP image and masks identified in step 1.
 ```
-python scripts/align_GT2CP.py \                                         # Script for the alignment of CP images with post-hoc ICC images.
+python scripts\align_GT2CP.py \                                        # Script for the alignment of CP images with post-hoc ICC images.
     --CP_path [PATH_TO_CP_IMAGES] \                                    # Path to the raw input images                                            # Required
     --GT_path [PATH_TO_GT_IMAGS] \                                     # Path to the raw ground-truth images                                     # Required
     --GT_name [NAME_OF_STAINING] \                                     # Name of the staining, used as folder name                               # Required
@@ -100,7 +114,7 @@ python scripts/align_GT2CP.py \                                         # Script
 
 Cropping of ROIs: individual cells (ROIs) are cropped out of the original image as patches based on segmentation masks. Patch size (in pixel) for full cell = 192, for nucleus and nucleocentric crops: 60. These crops are given as an input to the CNN for cell classification.
 ```
-python scripts/crop_ROIs.py \                                          # Script cropping smaller patches out of the original image to give as an input to the CNN to train
+python scripts\crop_ROIs.py \                                          # Script cropping smaller patches out of the original image to give as an input to the CNN to train
     --CP_path [PATH_TO_CP_IMAGES] \                                    # Path to the aligned CP input images                                     # Required
     --masks_path [PATH_TO_MASKS] \                                     # Path to the aligned segmentation masks                                  # Required
     --file_extension_imgs [FILE_EXTENSION_CP_AND_GT_IMAGES] \          # File extension of the aligned CP images                                 # Default '.tif'
@@ -115,7 +129,7 @@ python scripts/crop_ROIs.py \                                          # Script 
 Get intensity and texture features: handcrafted features extracted for RF and UMAP. The intensity features (if extracted from ground-truth images) are used to threshold and determine the true phenotype of a cell. The intensity and texture features (if extracted from CP images) are used as input for the random forest.
 
 ```
-python scripts/get_intensity_features.py \                             # Script extracting handcrafted intensity and shape features out of the input images. Used for GT thresholding (on GT images) and input for random forest (on CP images)
+python scripts\get_intensity_features.py \                             # Script extracting handcrafted intensity and shape features out of the input images. Used for GT thresholding (on GT images) and input for random forest (on CP images)
     --GT_path [PATH_TO_IMAGES] \                                       # Path to the aligned input images (can be GT or CP images)               # Required
     --GT_channel_names [NAMES_OF_CHANNELS] \                           # Names of the channels in the input image (in order)                     # Required
     --masks_path [PATH_TO_MASKS] \                                     # Path to the aligned segmentation masks                                  # Required
@@ -128,7 +142,7 @@ python scripts/get_intensity_features.py \                             # Script 
 ```
 
 ```
-python scripts/get_texture_features.py \                               # Script extracting texture features out of the input CP images. Used as input for the random forest.
+python scripts\get_texture_features.py \                               # Script extracting texture features out of the input CP images. Used as input for the random forest.
     --CP_path [PATH_TO_IMAGES] \                                       # Path to the aligned CP images                                            # Required
     --masks_path [PATH_TO_MASKS] \                                     # Path to the aligned segmentation masks                                   # Required
     --file_extension_imgs [FILE_EXTENSION_CP_IMAGES] \                 # File extension of the aligned CP images                                  # Default '.tif'
@@ -141,7 +155,7 @@ python scripts/get_texture_features.py \                               # Script 
 ## 3) Classification
 
 ```
-python script/train_evaluate_CNN.py \                                 # Script for training and evaluating a CNN on the CP crops
+python script\train_evaluate_CNN.py \                                 # Script for training and evaluating a CNN on the CP crops
     --input_path [PATH_TO_CP_CROPS] \                                 # Path to the CP crops, corresponds to the output path of the crop_ROIs.py script.                                                        # Required
     --output_path [OUTPUT_PATH] \                                     # Path where the trained model, .json and predictions will be stored          # Required
     --target_names [CULTURE_NAMES_TO_TRAIN_ON] \                      # Names of the classes that need to be predicted (as in layout file)          # Required
@@ -159,7 +173,7 @@ python script/train_evaluate_CNN.py \                                 # Script f
 ```
 
 ```
-python scripts/train_evaluate_RF.py \                                 # Script for training and evaluating a random forest on a feature dataframe
+python scripts\train_evaluate_RF.py \                                 # Script for training and evaluating a random forest on a feature dataframe
     --data_file [PATH_TO_FEATURE_DATA] \                              # Path to file containing ROI features (output from get_intensity_features.py and get_texture_features.py)        # Required
     --regions2use [REGIONS_AS_INPUT] \                                # Which regions to use for training and evaluation (cell, cyto, nucleus or all)                                   # Required
     --channels2use [CHANNELS_AS_INPUT] \                              # Which channels to use for training and evaluation (DAPI, FITC, Cy3, Cy5 or all)                                 # Required
@@ -170,7 +184,7 @@ python scripts/train_evaluate_RF.py \                                 # Script f
 
 ## 4) Evaluation
 ```
-python scripts/embeddings.py \                                        # Script for extracting the feature embeddings from a trained CNN model
+python scripts\embeddings.py \                                        # Script for extracting the feature embeddings from a trained CNN model
     --input_path [PATH_TO_CP_CROPS] \                                 # Input path to the CP crops you want to extract embeddings from                # Required
     --output_path [OUTPUT_PATH] \                                     # Output path where you want to store the .csv file with embeddings             # Required
     --model_file [PATH_TO_MODEL_FILE] \                               # Path to the trained CNN network (.pth file)                                   # Required
@@ -183,7 +197,7 @@ python scripts/embeddings.py \                                        # Script f
     --sample [SAMPLE_SIZE_PER_TARGET_CLASS]                           # How many ROIs of each target class are included in the training set           # Required
 ```
 ```
-python scripts/grad_cam.py \                                          # Script for generating GradCAM heatmaps of individual crops
+python scripts\grad_cam.py \                                          # Script for generating GradCAM heatmaps of individual crops
     --input_path [PATH_TO_CP_CROPS] \                                 # Input path to the CP crops you want to extract embeddings from                # Required
     --model_file [PATH_TO_MODEL_FILE] \                               # Path to the trained CNN network (.pth file)                                   # Required
     --target_names [CULTURE_NAMES_TO_TRAIN_ON] \                      # Names of the prediction classes (as in the layout file)                       # Required
@@ -197,36 +211,47 @@ python scripts/grad_cam.py \                                          # Script f
 ```
 # Step-by-step tutorial
 
-## (1) Download the demo dataset
-The demo dataset (zip-file, 20 GB) contains 480 cell painting images and 480 matched ground truth images. It is associated with a layout file describing the plate layout.
-Download, unzip and store the data locally. The Cell Painting images have 4 channels. The ground truth images have 2 channels (BrdU and EdU).
+## (1) Get started by installing the environment and downloading the demo dataset and scripts
+Install the environment.yml file as described above. Make sure the environment is activated when running the scripts.
 
-## (2) Segment individual cells
+The demo dataset (zip-file, 20 GB) contains 480 cell painting images and 480 matched ground truth images. It is associated with a layout file describing the plate layout.
+Download, unzip and store the data locally (e.g., D:\Documents\testdata). The Cell Painting images have 4 channels. The ground truth images have 2 channels (BrdU and EdU).
+
+Download the scripts and store them locally (e.g., in the same folder as the images). We recommend using Visual Studio Code (VSCode) to run the scripts. Upon starting VSCode, activate the correct folder by selecting File > Open folder > [PATH_TO_SCRIPTS\...\NUCLEOCENTRIC-PROFILING]. Make sure to activate the parent folder containing the 2 subfolders 'nucleocentric' and 'scripts'. Within the 'scripts' folder, all scripts can be found as described within this README and in the flowchart above. Run the code in the terminal by selecting Terminal > New Terminal and typing the commands below.
+
+## (2) Rename files
+For both the folder containing CP and GT images, rename files to the X-YY-ZZ format. 
+Run the code in the cmd terminal:
+```
+python scripts\renamer.py --filepath [INPUT_PATH]
+```
+
+## (3) Segment individual cells
 From the CP images, individual ROIs are segmented. This can be either from the full cell or only the nucleus. 
 Run the code in the cmd terminal:
 * Cell segmentation:
 ```
-python scripts/segment_cells.py -i [INPUT_PATH] -o [OUTPUT_PATH] --file_extension .nd2 --save_masks --gpu --net_avg --channels2use 0 1 2 3 --target cyto
+python scripts\segment_cells.py -i [INPUT_PATH] -o [OUTPUT_PATH] --file_extension .nd2 --save_masks --gpu --net_avg --channels2use 0 1 2 3 --target cyto
 ```
 * Nucleus segmentation:
 ```
-python scripts/segment_nuclei.py -i [INPUT_PATH] -o [OUTPUT_PATH] --file_extension .nd2 --gpu
+python scripts\segment_nuclei.py -i [INPUT_PATH] -o [OUTPUT_PATH] --file_extension .nd2 --gpu
 ```
-This segmentation step generates as output the segmentation masks and an overview of resulting images to check the segmentation quality.
+This segmentation step generates as output the segmentation masks.
 
-## (3) Ground truth alignment
+## (4) Ground truth alignment
 The ground truth information was acquired by cyclic staining. This means the multiwell plate is imaged twice. In between imaging cycles, the plate is taken off the microscope stage. As a result, small translational shifts can occur. We need to overlay information from all imaging rounds. Therefore, we perform this alignment step where the ground truth images are translated to perfectly match the CP images and masks.
 Run the code in the cmd terminal: 
 ```
-python scripts/align_GT2CP.py --CP_path --GT_path --GT_name EdU_BrdU --masks_path [PATH_TO_MASKS] --channels2use_CP 0 --channels2use_GT 0 --file_extension_imgs .nd2  --file_extension_masks .tif --output_path [OUTPUT_PATH]
+python scripts\align_GT2CP.py --CP_path [PATH_TO_CP_IMAGES] --GT_path [PATH_TO_GT_IMAGES] --GT_name EdU_BrdU --masks_path [PATH_TO_MASKS] --channels2use_CP 0 --channels2use_GT 0 --file_extension_imgs .nd2  --file_extension_masks .tif --output_path [OUTPUT_PATH]
 ```
 This step generates a folder containing aligned CP images, aligned GT images and aligned masks.
 
-## (4) Get ground truth datafile
+## (5) Get ground truth datafile
 Intensity information can be extracted from the GT images. Based on this intensity data and the presence and absence of fluorescent signal for either marker, a threshold is defined that determines which class the ROIs belong to. 
 The intensity information is extracted by running 'get_intensity_features.py' in the cmd terminal given the GT images as input:
 ```
-python scripts/get_intensity_features.py --GT_path [PATH_TO_GT_IMAGES] --GT_channel_names [EdU BrdU] --masks_path [PATH_TO_MASKS] --layout [...\layout.xlsx] --file_extension_GT .tif --file_extension_masks .tif --output_path [OUTPUT_PATH] --masked_patch --patch_size 60
+python scripts\get_intensity_features.py --GT_path [PATH_TO_ALIGNED_GT_IMAGES] --GT_channel_names EdU BrdU --masks_path [PATH_TO_ALIGNED_MASKS] --layout [...\layout.xlsx] --file_extension_GT .tif --file_extension_masks .tif --output_path [OUTPUT_PATH] --masked_patch --patch_size 60
 ```
 This step generates a .csv file containing features (columns) for each ROI (rows). This file is loaded into the 'set_GT_threshold.py' script. This script cannot be run in the terminal since it requires manual examination of the thresholds.
 
@@ -236,57 +261,57 @@ Example of ground-truth identification by thresholding (with intensity features 
 
 As an output of this step, a 'GT_data.csv' file is generated. This file contains for each ROI, a unique ROI identifier associated with a 'true condition'. This true condition refers to the true cell class or is 'undefined' when no unequivocal ground truth staining is present. 
 
-## (5) Crop ROIs
+## (6) Crop ROIs
 The individual ROIs are cropped out of the cell painting image. These crops can be given to the CNN as input. A crop is defined by 2 parameters: patch size and masking. The patch size refers to how large the crop is (expressed in pixels surrounding the centroid of the segmentation mask). Masking determines whether the background (all pixels outside of the segmentation mask) are put to zero or not. Run this code in the cmd terminal.
 * Full cell crops:
 ```
-python scripts/crop_ROIs.py --CP_path [PATH_TO_CP_IMAGES] --masks_path [PATH_TO_CELL_MASKS] --file_extension_imgs .tif --file_extension_masks .tif --output_path [OUTPUT_PATH] --masked_patch --patch_size 192
+python scripts\crop_ROIs.py --CP_path [PATH_TO_ALIGNED_CP_IMAGES] --masks_path [PATH_TO_ALIGNED_CELL_MASKS] --file_extension_imgs .tif --file_extension_masks .tif --output_path [OUTPUT_PATH] --masked_patch --patch_size 192
 ```
 * Nuclear crops:
 ```
-python scripts/crop_ROIs.py --CP_path [PATH_TO_CP_IMAGES] --masks_path [PATH_TO_NUCLEAR_MASKS] --file_extension_imgs .tif --file_extension_masks .tif --output_path [OUTPUT_PATH] --masked_patch --patch_size 60
+python scripts\crop_ROIs.py --CP_path [PATH_TO_ALIGNED_CP_IMAGES] --masks_path [PATH_TO_ALIGNED_NUCLEAR_MASKS] --file_extension_imgs .tif --file_extension_masks .tif --output_path [OUTPUT_PATH] --masked_patch --patch_size 60
 ```
 * Nucleocentric crops:
 ```
-python scripts/crop_ROIs.py --CP_path [PATH_TO_CP_IMAGES] --masks_path [PATH_TO_NUCLEAR_MASKS] --file_extension_imgs .tif --file_extension_masks .tif --output_path [OUTPUT_PATH] --patch_size 60
+python scripts\crop_ROIs.py --CP_path [PATH_TO_ALIGNED_CP_IMAGES] --masks_path [PATH_TO_ALIGNED_NUCLEAR_MASKS] --file_extension_imgs .tif --file_extension_masks .tif --output_path [OUTPUT_PATH] --patch_size 60
 ```
 This step results in small ROI crops.
 
-## (6) Features for random forest
+## (7) Features for random forest
 Handcrafted features can be extracted from the original image. These features need to be extracted from the CP images. There are 2 separate scripts that can be merged using the unique identifier. Run this code in the cmd terminal.
 * Intensity and shape features:
 ```
-python scripts/get_intensity_features.py --GT_path [PATH_TO_CP_IMAGES] --GT_channel_names DAPI FITC Cy3 Cy5 --masks_path [PATH_TO_MASKS] --layout [...\layout.xlsx] --file_extension_GT .tif --file_extension_masks .tif --output_path [OUTPUT_PATH] --masked_patch --patch_size 192
+python scripts\get_intensity_features.py --GT_path [PATH_TO_ALIGNED_CP_IMAGES] --GT_channel_names DAPI FITC Cy3 Cy5 --masks_path [PATH_TO_ALIGNED_MASKS] --layout [...\layout.xlsx] --file_extension_GT .tif --file_extension_masks .tif --output_path [OUTPUT_PATH] --masked_patch --patch_size 192
 ```
 * Texture features:
 ```
-python scripts/get_texture_features.py --CP_path [PATH_TO_CP_IMAGES] --masks_path [PATH_TO_MASKS] --file_extension_imgs .tif --file_extension_masks .tif --output_path [OUTPUT_PATH] --masked_patch --patch_size 192
+python scripts\get_texture_features.py --CP_path [PATH_TO_ALIGNED_CP_IMAGES] --masks_path [PATH_TO_ALIGNED_MASKS] --file_extension_imgs .tif --file_extension_masks .tif --output_path [OUTPUT_PATH] --masked_patch --patch_size 192
 ```
 The resulting .csv file can be given as input to the random forest or can be used to create PCA, UMAP, ...
 
-## (7) Random Forest
+## (8) Random Forest
 This code builds a random forest based on the hancrafted features. Run this code in the cmd terminal.
 ```
-python scripts/train_evaluate_RF.py --data_file [...\features.csv] --regions2use all --channels2use all --mixed_culture --sample 2000 --random_seed 0 --GT_data_file [...\GT_data.csv]
+python scripts\train_evaluate_RF.py --data_file [...\features.csv] --regions2use all --channels2use all --mixed_culture --sample 2000 --random_seed 0 --GT_data_file [...\GT_data.csv]
 ```
 
-## (8) Convolutional neural network
+## (9) Convolutional neural network
 This code trains a CNN using the image crops as input. Run this code in the cmd terminal.
 ```
-python scripts/train_evaluate_cnn.py --input_path [PATH_TO_CP_CROPS] --output_path [OUTPUT_PATH] --target_names astro SHSY5Y --layout [...\layout.xlsx] --GT_data_file [...\GT_data.csv] --channels2use 0 1 2 3 --random_seed 0 --save --mixed_culture --batch_size 100 --sample 2000
+python scripts\train_evaluate_cnn.py --input_path [PATH_TO_CP_CROPS] --output_path [OUTPUT_PATH] --target_names astro SHSY5Y --layout [...\layout.xlsx] --GT_data_file [...\GT_data.csv] --channels2use 0 1 2 3 --random_seed 0 --save --mixed_culture --batch_size 100 --sample 2000
 ```
 This script outputs a .csv file containining the prediction results, the trained model and a json file with metadata.
 
-## (9) Understanding the CNN
+## (10) Understanding the CNN
 To understand how the CNN makes it prediction, it is possible to extract the feature embeddings of the model and plot the embeddings using UMAP. Or gradCAM maps can be used to visualize where the attention of the CNN goes to.
 * feature embedding extraction:
 ```
-python scripts/embeddings.py --input_path [PATH_TO_CP_CROPS] --output_path [OUTPUT_PATH] --model_file [PATH_TO_MODEL_FILE] --target_names astro SHSY5Y --layout [...\layout.xlsx] --GT_data_file [...\GT_data.csv] --random_seed 0 --mixed_culture --sample 2000
+python scripts\embeddings.py --input_path [PATH_TO_CP_CROPS] --output_path [OUTPUT_PATH] --model_file [PATH_TO_MODEL_FILE] --target_names astro SHSY5Y --layout [...\layout.xlsx] --GT_data_file [...\GT_data.csv] --random_seed 0 --mixed_culture --sample 2000
 ```
 This script results in a .csv file containing the feature embeddings, unique ROI identifier and true class condition.
 * gradCAM heatmap:
 ```
-python scripts/grad_cam.py --input_path [PATH_TO_CP_CROPS] --model_file [PATH_TO_MODEL_FILE] --target_names astro SHSY5Y --layout [...\layout.xlsx] --GT_data_file [...\GT_data.csv] --channels2use 0 1 2 3 --random_seed 0 --mixed_culture --sample 1
+python scripts\grad_cam.py --input_path [PATH_TO_CP_CROPS] --model_file [PATH_TO_MODEL_FILE] --target_names astro SHSY5Y --layout [...\layout.xlsx] --GT_data_file [...\GT_data.csv] --channels2use 0 1 2 3 --random_seed 0 --mixed_culture --sample 1
 ```
 
  
