@@ -217,7 +217,7 @@ Install the environment.yml file as described above. Make sure the environment i
 The demo dataset (zip-file, 20 GB) contains 480 cell painting images and 480 matched ground truth images. It is associated with a layout file describing the plate layout.
 Download, unzip and store the data locally (e.g., D:\Documents\testdata). The Cell Painting images have 4 channels. The ground truth images have 2 channels (BrdU and EdU).
 
-Download the scripts and store them locally (e.g., in the same folder as the images). We recommend using Visual Studio Code (VSCode) to run the scripts. Upon starting VSCode, activate the correct folder by selecting File > Open folder > [PATH_TO_SCRIPTS\...\NUCLEOCENTRIC-PROFILING]. Make sure to activate the parent folder containing the 2 subfolders 'nucleocentric' and 'scripts'. Within the 'scripts' folder, all scripts can be found as described within this README and in the flowchart above. Run the code in the terminal by selecting Terminal > New Terminal and typing the commands below.
+Download the scripts and store them locally (e.g., in the same folder as the images). We recommend using Visual Studio Code (VSCode) to run the scripts. Upon starting VSCode, activate the correct folder by selecting File > Open folder > [PATH_TO_SCRIPTS\...\PARENT]. Make sure to activate the parent folder containing the 2 subfolders 'nucleocentric' and 'scripts' (both found in this GitHub). Within the 'scripts' folder, all scripts can be found as described within this README and in the flowchart above. Run the code in the terminal by selecting Terminal > New Terminal and typing the commands below.
 
 ## (2) Rename files
 For both the folder containing CP and GT images, rename files to the X-YY-ZZ format. 
