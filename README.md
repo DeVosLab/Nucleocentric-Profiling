@@ -324,7 +324,7 @@ python scripts\grad_cam.py --input_path C:\Users\...\ELIFE2024\[timestamp]\crops
 The installation, test dataset and code have been validated on 3 separate devices
 * HP Pavilion: Microsoft Windows 10.0.19045 Build 19045. Intel(R) Core(TM) i7-8550U CPU @ 1.80GHz, 2001 Mhz, 4 Core(s), 8 Logical Processor(s). GPU NVIDIA GeForce GTX 1050.
 * MS-7D04: Microsoft Windows 11 Enterprise 10.022631 Build 22631. 11th Gen Intel(R) Core(TM) i9-11900K @ 3.50GHz, 3504 Mhz, 8 Core(s), 16 Logical Processor(s). GPU NVIDIA GeForce RTX 3090.
-* 
+* Apple MacBook Pro (2021) with 32GB RAM. macOS Sonoma Version 14.5. Apple M1 Pro chip.
 
  
 ## HOW TO CITE
